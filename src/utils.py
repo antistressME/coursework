@@ -9,43 +9,22 @@ from src.read_xlsx import get_operations_from_xlsx
 path_to_file = Path.Path(BASEDIR / "data" / "operations.xlsx")
 
 
-def get_expense(transactions):
+def get_expense(transactions: pd.DataFrame) -> pd.DataFrame:
     """Получаем раходные операции"""
     pd_expenses = transactions.loc[(transactions["Статус"] == "OK") & (transactions["Сумма операции"] < 0)]
     return pd_expenses
 
 
-if __name__ == "__main__":
-    transactions = get_operations_from_xlsx(path_to_file)
-    print(get_expense(transactions))
+def get_column_values(transactions: pd.DataFrame, column_name: str) -> list:
+    """Получаем список уникальных значений из столбца"""
+    data = transactions.loc[transactions[column_name].notnull()]
+    column_values = data[column_name].unique()
+    return list(column_values)
 
 
-def get_card_numbers(transactions) -> list:
-    """Получаем список карт"""
-    data = transactions.loc[transactions["Номер карты"].notnull()]
-    card_numbers = data["Номер карты"].unique()
-    return list(card_numbers)
-
-
-if __name__ == "__main__":
-    transactions = get_operations_from_xlsx(path_to_file)
-    print(get_card_numbers(transactions))
-
-
-def get_categories(transactions) -> list:
-    """Получаем список категорий"""
-    data = transactions.loc[transactions["Категория"].notnull()]
-    categories = data["Категория"].unique()
-    return list(categories)
-
-
-if __name__ == "__main__":
-    transactions = get_operations_from_xlsx(path_to_file)
-    print(get_categories(transactions))
-
-
-def get_sum_by_categories(transactions, categories: list) -> dict:
+def get_sum_by_categories(transactions: pd.DataFrame) -> dict:
     """Получаем сумму операций по категориям"""
+    categories = get_column_values(transactions, "Категория")
     sum_by_category = {}
     for item in categories:
         transactions_category = transactions.loc[transactions["Категория"].isin([item])]
@@ -54,15 +33,9 @@ def get_sum_by_categories(transactions, categories: list) -> dict:
     return sum_by_category
 
 
-if __name__ == "__main__":
-    transactions = get_operations_from_xlsx(path_to_file)
-    data = get_expense(transactions)
-    categories = get_categories(transactions)
-    print(get_sum_by_categories(data, categories))
-
-
-def get_sum_by_card(transactions, card_numbers: list) -> dict:
+def get_sum_by_card(transactions: pd.DataFrame) -> dict:
     """Получаем сумму расходов по каждой карте"""
+    card_numbers = get_column_values(transactions, "Номер карты")
     sum_by_card = {}
     for card in card_numbers:
         card_transactions = transactions.loc[transactions["Номер карты"].isin([card])]
@@ -71,20 +44,26 @@ def get_sum_by_card(transactions, card_numbers: list) -> dict:
     return sum_by_card
 
 
+def get_month_transactions(transactions: pd.DataFrame, date=datetime.datetime.now()) -> pd.DataFrame:
+    """Получаем операции с 1 числа месяца указанной даты до указанной даты"""
+    transactions["Дата операции"] = pd.to_datetime(transactions["Дата операции"], format="%d.%m.%Y %H:%M:%S")
+    month_start = date.replace(day=1, hour=0, minute=0, second=0)
+    str_start_date = month_start.strftime("%d.%m.%Y")
+    str_end_date = date.strftime("%d.%m.%Y")
+    transactions_at_period = transactions.loc[
+        (transactions["Дата операции"] >= str_start_date) & (transactions["Дата операции"] <= str_end_date)
+    ]
+    return transactions_at_period
+
+
 if __name__ == "__main__":
     transactions = get_operations_from_xlsx(path_to_file)
+    print(get_expense(transactions))
+
     data = get_expense(transactions)
-    card_numbers = get_card_numbers(transactions)
-    print(get_sum_by_card(data, card_numbers))
+    print(get_sum_by_categories(data))
 
+    print(get_sum_by_card(data))
 
-# def get_period(transactions, date=datetime.datetime.now()):
-#     """Получаем период времени по указанной дате"""
-#     transactions_date = datetime.datetime.strptime(transactions["Дата операции"], "%d.%m.%Y %H:%M:%S")
-#     beginning_of_the_month = date.replace(day=1, hour=0, minute=0, second=0)
-#     transactions_at_petiod = transactions.loc[(transactions_date > beginning_of_the_month) & (transactions_date < date)]
-#     return transactions_at_petiod
-#
-# if __name__ == '__main__':
-#     transactions = get_operations_from_xlsx(path_to_file)
-#     print(get_period(transactions))
+    date = datetime.datetime(month=1, day=5, year=2018)
+    print(get_month_transactions(transactions, date))

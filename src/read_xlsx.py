@@ -5,7 +5,7 @@ import pandas as pd
 from src.main import BASEDIR
 
 
-def get_operations_from_xlsx(path_to_file: str) -> any:
+def get_operations_from_xlsx(path_to_file: str) -> pd.DataFrame:
     """Получаем список транзакций из файла Excel"""
     xlsx_data = pd.read_excel(path_to_file)
     return xlsx_data
