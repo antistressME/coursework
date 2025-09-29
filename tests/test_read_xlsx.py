@@ -12,3 +12,7 @@ def test_get_operations_from_xlsx(mock_data_xlsx):
     assert get_operations_from_xlsx("") == pdata
     mock_data_xlsx.assert_called()
     mock_data_xlsx.assert_called_once()
+
+
+def test_get_operations_from_xlsx_error():
+    assert str(get_operations_from_xlsx("wrong_path")) == "Неверный путь к файлу"

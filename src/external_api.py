@@ -29,26 +29,26 @@ def get_currencies(currency: str) -> dict:
     response = requests.request("GET", url, headers={"apikey": key}, timeout=9)
     status_code = response.status_code
     if status_code == 200:
-        return json.loads(response.text)
+        data = json.loads(response.text)
+        if data["code"] == 200:
+            return data["rate"]
+        else:
+            error_message = f"An error {data['code']} occurred. Please try again later."
+            print(error_message)
     else:
         error_message = f"An error {status_code} occurred. Please try again later."
         print(error_message)
 
 
 # https://www.alphavantage.co/
-# акции
-def get_stocks():
+def get_stocks(symbol):
     """Получаем акции."""
     key = os.getenv("API_KEY_ALPHAVANTAGE")
-    url = f"https://www.alphavantage.co/query?function=REALTIME_OPTIONS&interval=5min&apikey={key}"
+    url = f"https://www.alphavantage.co/query?function=REALTIME_OPTIONS&symbol={symbol}&apikey={key}"
     response = requests.request("GET", url, headers={"apikey": key}, timeout=9)
     status_code = response.status_code
     if status_code == 200:
-        return json.loads(response.text)
+        return json.loads(response.text)["data"][1]["mark"]
     else:
         error_message = f"An error {status_code} occurred. Please try again later."
         print(error_message)
-
-
-if __name__ == "__main__":
-    print(get_stocks())
