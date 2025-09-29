@@ -10,10 +10,3 @@ def get_operations_from_xlsx(path_to_file: str) -> pd.DataFrame:
         return xlsx_data
     except:
         return FileNotFoundError("Неверный путь к файлу")
-
-
-if __name__ == "__main__":
-    from src.main import BASEDIR
-
-    path_to_file = Path.Path(BASEDIR / "data" / "operations.xlsx")
-    print(get_operations_from_xlsx(path_to_file))
