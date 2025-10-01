@@ -15,17 +15,19 @@ def log(filename="reports.csv", *args, **kwargs):
             try:
                 result = func(*args, **kwargs)
                 log_message = f"{func.__name__} ok"
+                print(log_message)
+                result_dict = result.to_dict("index")
+                fieldnames = list(result.columns)
+                path_to_file = Path.Path(BASEDIR / "data" / filename)
+                with open(path_to_file, "w", encoding="utf-8") as file:
+                    writer = csv.DictWriter(file, fieldnames=fieldnames)
+                    writer.writeheader()
+                    for value in result_dict.values():
+                        writer.writerow(value)
+                return result.to_json(orient="records", force_ascii=False)
             except:
                 log_message = f"{func.__name__} error: {Exception.__class__.__name__}. Inputs: {args}, {kwargs}"
-            result_dict = result.to_dict("index")
-            fieldnames = list(result.columns)
-            path_to_file = Path.Path(BASEDIR / "data" / filename)
-            with open(path_to_file, "w", encoding="utf-8") as file:
-                writer = csv.DictWriter(file, fieldnames=fieldnames)
-                writer.writeheader()
-                for value in result_dict.values():
-                    writer.writerow(value)
-            return log_message
+                print(log_message)
 
         return innit
 

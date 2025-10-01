@@ -1,4 +1,5 @@
 import datetime
+import json
 import pathlib as Path
 
 from external_api import get_currencies, get_stocks
@@ -57,7 +58,7 @@ def main_page(date_: str):
             {"stock": "GOOGL", "price": get_stocks("GOOGL")},
         ],
     }
-    return result
+    return json.dumps(result, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":

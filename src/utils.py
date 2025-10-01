@@ -1,13 +1,21 @@
 import datetime
+import logging
 
 import pandas as pd
 
 from src.external_api import currency_conversion
 
+logger = logging.getLogger(__name__)
+console_handler = logging.StreamHandler()
+logger.addHandler(console_handler)
+logger.setLevel(logging.DEBUG)
+
 
 def greeting():
     """Возвращает приветсвие в зависимости от текущего времени."""
+    logger.info("Оперделение текущего времени.")
     time_now = datetime.datetime.now().time()
+
     t_4_00 = datetime.datetime.strptime("2000-01-01 04:00:00.000000", "%Y-%m-%d %H:%M:%S.%f").time()
     t_12_00 = datetime.datetime.strptime("2000-01-01 12:00:00.000000", "%Y-%m-%d %H:%M:%S.%f").time()
     t_16_00 = datetime.datetime.strptime("2000-01-01 16:00:00.000000", "%Y-%m-%d %H:%M:%S.%f").time()
@@ -23,6 +31,7 @@ def greeting():
 
 def get_column_values(transactions: pd.DataFrame, column_name: str) -> list:
     """Получаем список уникальных значений из столбца."""
+    logger.info("Получаем список уникальных значений из столбца.")
 
     data = transactions.loc[transactions[column_name].notnull()]
     column_values = data[column_name].unique()
@@ -31,6 +40,7 @@ def get_column_values(transactions: pd.DataFrame, column_name: str) -> list:
 
 def to_rub(transactions: pd.DataFrame) -> pd.DataFrame:
     """Заменяем сумму операции на сумму в рублях и наименования валют в RUB."""
+    logger.info("Конвертируем валюту в рубли. ")
 
     currencies = get_column_values(transactions, "Валюта операции")
     currencies.remove("RUB")
@@ -44,12 +54,14 @@ def to_rub(transactions: pd.DataFrame) -> pd.DataFrame:
 
 def get_expense(transactions: pd.DataFrame) -> pd.DataFrame:
     """Получаем раходные операции."""
+    logger.info("Получаем раходные операции.")
     pd_expenses = transactions.loc[(transactions["Статус"] == "OK") & (transactions["Сумма операции"] < 0)]
     return pd_expenses
 
 
 def get_sum_by_categories(transactions: pd.DataFrame) -> dict:
     """Получаем сумму операций по категориям."""
+    logger.info("Получаем сумму операций по категориям.")
     categories = get_column_values(transactions, "Категория")
     sum_by_category = {}
     for item in categories:
@@ -61,6 +73,7 @@ def get_sum_by_categories(transactions: pd.DataFrame) -> dict:
 
 def get_sum_by_card(transactions: pd.DataFrame) -> dict:
     """Получаем сумму расходов по каждой карте."""
+    logger.info("Получаем сумму операций по каждой карте.")
     card_numbers = get_column_values(transactions, "Номер карты")
     sum_by_card = {}
     for card in card_numbers:
@@ -72,6 +85,7 @@ def get_sum_by_card(transactions: pd.DataFrame) -> dict:
 
 def get_month_transactions(transactions: pd.DataFrame, date=datetime.datetime.now()) -> pd.DataFrame:
     """Получаем операции с 1 числа месяца указанной даты до указанной даты."""
+    logger.info("Получаем операции с 1 числа.")
     transactions["Дата операции"] = pd.to_datetime(transactions["Дата операции"], format="%d.%m.%Y %H:%M:%S")
     if type(date) == str:
         date = datetime.datetime.strptime(date, "%d.%m.%Y %H:%M:%S")
@@ -84,7 +98,7 @@ def get_month_transactions(transactions: pd.DataFrame, date=datetime.datetime.no
 
 def top_5_payments(transactions: pd.DataFrame) -> pd.DataFrame:
     """Получаем топ-5 транзакций по сумме платежа."""
-
+    logger.info("Получаем топ-5 транзакций по сумме платежа.")
     transactions.sort_values(
         "Сумма операции с округлением",
         axis=0,
@@ -100,7 +114,7 @@ def top_5_payments(transactions: pd.DataFrame) -> pd.DataFrame:
 
 def convert_to_list(transactions: pd.DataFrame) -> list[dict]:
     """Переводит датафрейм в список словарей."""
-
+    logger.info("Получаем список словарей.")
     xlsx_dict = transactions.to_dict("index")
     xlsx_list = []
     for value in xlsx_dict.values():

@@ -6,12 +6,14 @@ from src.read_xlsx import get_operations_from_xlsx
 
 
 @patch("src.read_xlsx.pd.read_excel")
-def test_get_operations_from_xlsx(mock_data_xlsx):
-    pdata = Mock(spec=pd.DataFrame())
-    mock_data_xlsx.return_value = pdata
-    assert get_operations_from_xlsx("") == pdata
-    mock_data_xlsx.assert_called()
-    mock_data_xlsx.assert_called_once()
+def test_get_operations_from_xlsx(mock_read_excel):
+
+    mock_df = Mock(spec=pd.DataFrame)
+    mock_read_excel.return_value = mock_df
+    result = get_operations_from_xlsx("path_to_file")
+
+    mock_read_excel.assert_called_once_with("path_to_file")
+    assert result == mock_df
 
 
 def test_get_operations_from_xlsx_error():
